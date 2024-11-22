@@ -13,7 +13,7 @@ module Mutations
       raise GraphQL::ExecutionError.new "Error deleting product", extensions: product.errors.to_hash unless product.destroy
 
       # { product: product }
-      { message: 'Blog deleted successfully' }
+      { message: 'Product deleted successfully' }
     end
   end
 end
