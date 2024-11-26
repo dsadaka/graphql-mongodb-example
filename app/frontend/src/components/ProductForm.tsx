@@ -1,42 +1,79 @@
-import React from "react"
-import { FC } from 'react';
+import { FC, useEffect } from 'react';
 import { useForm } from  'react-hook-form';
-import { useMutation} from "@tanstack/react-query";
-import { Button } from "./components/ui/button"
-import { Routes, Route, useNavigate } from 'react-router-dom';
-import { Heading, Text, Box, Flex  } from "@chakra-ui/react"
-import { useCreateProduct } from "../services/useRequests";
-import { useGQLQuery } from "../services/useGQLQuery";
-import { GET_PRODUCTS, GET_PRODUCT, CREATE_PRODUCT, UPDATE_PRODUCT, DELETE_PRODUCT } from '../queries/queries'
+import { useCreateProduct, useUpdateProduct } from "../services/useRequests";
+import { Input, Button, Box} from "@chakra-ui/react";
+import { useSelector, useDispatch } from "react-redux";
+import { editProductAction } from 'redux/action';
 
-// Components
+interface FormData {
+    name: string;
+    type: string;
+    length: number;
+    width: number;
+    height: number;
+    weight: number;
+}
 
-const ProductForm: FC = ({ product }) => {
-    const { register, handleSubmit, reset } = useForm({
-        defaultValues: product,
-    });
-    // const navigate = useNavigate();
+interface ProductFormProps {
+    onClose: () => void;
+    id: string;
+}
 
-    const onSubmit = async (data) => {
-        if (product) {
-            // await useMutation('createProduct', CREATE_PRODUCT, { id: product.id, ...data });
-        } else {
-            useCreateProduct(data)
+const ProductForm: FC<ProductFormProps> = ({onClose, id}) => {
+    const { register, handleSubmit, formState: { errors }, reset } = useForm<FormData>();
+    const { mutate: createProduct } = useCreateProduct();
+    const { mutate: updateProduct } = useUpdateProduct();
+    const dispatch = useDispatch();
+    const selectedProduct = useSelector((state: any)=> state.selectedProduct);
+
+    useEffect(() => {
+        dispatch(editProductAction(id));
+        if (selectedProduct) {
+            reset({
+                name: selectedProduct?.name,
+                type: selectedProduct?.type,
+                length: selectedProduct?.length,
+                width: selectedProduct?.width,
+                height: selectedProduct?.height,
+                weight: selectedProduct?.weight,
+            });
         }
+    }, [selectedProduct]);
+
+    const productHandler=(data: any)=>{
+        const formattedData = {
+            ...data,
+            length: parseInt(data.length, 10),
+            width: parseInt(data.width, 10),
+            height: parseInt(data.height, 10),
+            weight: parseInt(data.weight, 10),
+        };
+        if(id){
+            updateProduct({id, ...formattedData});
+        }
+        else{
+           createProduct(formattedData);
+        }
+        closeHandler();
+    };
+
+    const closeHandler=()=>{
         reset();
-        // navigate('/');
+        onClose();
     };
 
     return (
-        <form onSubmit={handleSubmit(onSubmit)}>
-            {/*<input type="hidden" value={product.id} {...register('id')} />*/}
-            <input type="text" placeholder="Name" {...register('name', { required: true })} />
-            <input type="text" placeholder="Type" {...register('type', { required: true })} />
-            <input type="number" placeholder="Length" {...register('length', { required: true })} />
-            <input type="number" placeholder="Width" {...register('width', { required: true })} />
-            <input type="number" placeholder="Height" {...register('height', { required: true })} />
-            <input type="number" placeholder="Weight" {...register('weight', { required: true })} />
-            <button type="submit">Save</button>
+        <form onSubmit={handleSubmit(productHandler)}>
+            <Input placeholder="Name" className={`${errors.name}` ? 'field--error' : ''} type="text" {...register('name', { required: true })} px={2} border="1px solid #ddd" mb={2}/>
+            <Input placeholder="Type" className={`${errors.type}` ? 'field--error' : ''} type="text" {...register('type', { required: true })} px={2} border="1px solid #ddd" mb={2}/>
+            <Input placeholder="Length" className={`${errors.length}` ? 'field--error' : ''} type="number" {...register('length', { required: true })} px={2} border="1px solid #ddd" mb={2}/>
+            <Input placeholder="Width" className={`${errors.width}` ? 'field--error' : ''} type="number" {...register('width', { required: true })} px={2} border="1px solid #ddd" mb={2}/>
+            <Input placeholder="Height" className={`${errors.height}` ? 'field--error' : ''} type="number" {...register('height', { required: true })} px={2} border="1px solid #ddd" mb={2}/>
+            <Input placeholder="Weight" className={`${errors.weight}` ? 'field--error' : ''} type="number" {...register('weight', { required: true })} px={2} border="1px solid #ddd" mb={2}/>
+            <Box display="flex" justifyContent="flex-end" gap={2}>
+                <Button border="2px solid #ddd" px={4} onClick={closeHandler} type="button">Cancel</Button>
+                <Button bg="teal.500" color="white" px={4} type="submit">{id ? 'Update' : 'Create'}</Button>
+            </Box>
         </form>
     );
 };

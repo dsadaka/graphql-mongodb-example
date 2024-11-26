@@ -27,7 +27,7 @@ export const GET_PRODUCT = gql`
     }
 `
 export const CREATE_PRODUCT = gql`
-    mutation CreateProduct($name: String!, $type: String!, $length: Number!, $width: Number!, $height: Number!, $weight: Number!) {
+    mutation CreateProduct($name: String!, $type: String!, $length: Int!, $width: Int!, $height: Int!, $weight: Int!) {
       createProduct(input: { params: { name: $name, type: $type, length: $length, width: $width, height: $height, weight: $weight } }) {
         product {
           id
@@ -42,7 +42,7 @@ export const CREATE_PRODUCT = gql`
     }
 `
 export const UPDATE_PRODUCT = gql`
-    mutation UpdateProduct($id: ID!, $name: String, $type: String, $length: Number, $width: Number, $height: Number, $weight: Number) {
+    mutation UpdateProduct($id: ID!, $name: String!, $type: String!, $length: Int!, $width: Int!, $height: Int!, $weight: Int!) {
       productUpdate(input: { id: $id, productInput: { name: $name, type: $type, length: $length, width: $width, height: $height, weight: $weight } }) {
         product {
           id
